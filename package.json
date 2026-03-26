@@ -1,0 +1,20 @@
+{
+  "name": "bug-aggregator",
+  "version": "1.0.0",
+  "description": "Daily Slack bug report aggregator powered by Claude AI",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "trigger": "node -e \"require('./src/services/reportService').runDailyReport()\""
+  },
+  "dependencies": {
+    "@slack/web-api": "^7.0.0",
+    "dotenv": "^16.0.0",
+    "groq-sdk": "^1.1.2",
+    "node-cron": "^3.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}
