@@ -20,6 +20,8 @@ async function fetchTodaysMessages() {
   const oldest = String(startOfDay.getTime() / 1000);
   const latest = String(now.getTime() / 1000);
 
+  console.log("[Slack] Fetching for Messages between: ", `${startOfDay}`, `${now}`)
+
   let messages = [];
   let cursor;
 
