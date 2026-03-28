@@ -12,6 +12,8 @@ async function fetchTodaysMessages() {
   // Build start/end timestamps for yesterday (midnight to now)
   //Yesterday for testing purposes
   const now = new Date()
+  now.setDate(now.getDate() - 1)
+  // const now = new Date()
   const startOfDay = new Date(now);
   startOfDay.setHours(0, 0, 0, 0);
 
