@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { startScheduler } = require("./scheduler");
+const { runDailyReport } = require("./services/reportService");
 
 // Validate required env vars on startup
 const required = [
@@ -15,5 +16,20 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-console.log("[Startup] Bug Aggregator Bot is running.");
-startScheduler();
+const args = process.argv.slice(2);
+
+if (args.includes("--run-now")) {
+  console.log("[Manual] Running daily report now...");
+  runDailyReport()
+    .then(() => {
+      console.log("[Manual] Report completed.");
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error("[Manual] Report failed:", err.message);
+      process.exit(1);
+    });
+} else {
+  console.log("[Startup] Bug Aggregator Bot is running.");
+  startScheduler();
+}

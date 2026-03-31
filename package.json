@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "trigger": "node -e \"require('./src/services/reportService').runDailyReport()\""
+    "trigger": "node src/index.js --run-now",
+    "export-messages": "node src/scripts/exportMessages.js",
+    "post-report": "node src/scripts/postReport.js"
   },
   "dependencies": {
     "@slack/web-api": "^7.0.0",
