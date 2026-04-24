@@ -1,10 +1,12 @@
 /**
  * exportMessages.js
  *
- * Fetches today's bug report messages from Slack and writes them
- * to a local file ready to be fed into Claude Code manually.
+ * Fetches bug report messages from Slack and writes them to a local file
+ * ready to be fed into Claude Code manually.
  *
- * Usage: node src/scripts/exportMessages.js
+ * Usage:
+ *   node src/scripts/exportMessages.js                # today's messages (default)
+ *   node src/scripts/exportMessages.js 2025-04-09     # from YYYY-MM-DD 00:00 until now
  */
 
 require("dotenv").config();
@@ -12,22 +14,43 @@ const fs = require("fs");
 const path = require("path");
 const { fetchTodaysMessages } = require("../services/slackService");
 
+function parseStartDateArg(arg) {
+  if (!arg) return undefined;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(arg);
+  if (!match) {
+    throw new Error(`Invalid date "${arg}". Expected format: YYYY-MM-DD`);
+  }
+  const [, y, m, d] = match;
+  const date = new Date(Number(y), Number(m) - 1, Number(d), 0, 0, 0, 0);
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`Invalid date "${arg}".`);
+  }
+  return date;
+}
+
 async function exportMessages() {
-  console.log("[Export] Fetching today's messages from Slack...");
-  const messages = await fetchTodaysMessages();
+  const startDate = parseStartDateArg(process.argv[2]);
+
+  if (startDate) {
+    console.log(`[Export] Fetching messages since ${startDate.toISOString()}...`);
+  } else {
+    console.log("[Export] Fetching today's messages from Slack...");
+  }
+
+  const messages = await fetchTodaysMessages(startDate);
 
   if (messages.length === 0) {
-    console.log("[Export] No messages found for today.");
+    console.log("[Export] No messages found for the requested range.");
     return;
   }
 
   // Build the prompt file content — ready to paste into Claude Code
-  const today = new Date().toLocaleDateString("en-US", {
+  const rangeLabel = (startDate || new Date()).toLocaleDateString("en-US", {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
 
   const promptContent = `
-# Bug Report Clustering Task — ${today}
+# Bug Report Clustering Task — ${rangeLabel}
 
 You are a senior QA analyst. Below are bug report messages collected from a Slack channel today.
 

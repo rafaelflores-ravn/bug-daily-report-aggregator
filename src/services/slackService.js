@@ -3,18 +3,18 @@ const { WebClient } = require("@slack/web-api");
 const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
 
 /**
- * Fetches all messages from the bug channel for the current day.
+ * Fetches all messages from the bug channel between the given start date and now.
+ * If no startDate is provided, defaults to today's midnight (standard daily report).
  * Handles pagination automatically via cursor.
+ *
+ * @param {Date} [startDate] - Optional start of the fetch window. Defaults to today at 00:00.
  */
-async function fetchTodaysMessages() {
+async function fetchTodaysMessages(startDate) {
   const channelId = process.env.SLACK_CHANNEL_ID;
 
-  // Build start/end timestamps for yesterday (midnight to now)
-  //Yesterday for testing purposes
-  const now = new Date()
-  const startOfDay = new Date(now);
-  startOfDay.setHours(0, 0, 0, 0);
-
+  const now = new Date();
+  const startOfDay = startDate ? new Date(startDate) : new Date();
+  if (!startDate) startOfDay.setHours(0, 0, 0, 0);
 
   const oldest = String(startOfDay.getTime() / 1000);
   const latest = String(now.getTime() / 1000);
@@ -34,10 +34,15 @@ async function fetchTodaysMessages() {
       ...(cursor && { cursor }),
     });
 
+    console.log (res.messages)
+
     const valid = (res.messages || []).filter(
       (m) =>
         m.type === "message" &&
-        m.subtype === "bot_message"
+        m.subtype === "bot_message" &&
+        m.bot_profile?.name == "Data Test Notifier" &&
+        m.text.includes('On  7th Iteration')
+
     );
 
     messages = messages.concat(valid);
